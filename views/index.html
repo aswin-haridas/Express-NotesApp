@@ -4,315 +4,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpaceCapsule</title>
+    <title>Zametki.</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
-<style>
-    :root {
-        --main-font: 'Courier New', Courier, monospace;
-        --main-bg-color: #fff;
-        --primary-color: #000;
-        --secondary-color: bisque;
-        --input-padding: 10px;
-        --input-margin: 10px 0;
-        --font-size-large: 30px;
-        --font-size-medium: 16px
-    }
-
-    * {
-        font-family: var(--main-font)
-    }
-
-    body {
-        padding: 20px
-    }
-
-    header {
-        font-size: var(--font-size-large);
-        font-weight: 700
-    }
-
-    .post-form {
-        margin-bottom: 20px
-    }
-
-    .post-form input,
-    .post-form textarea {
-        font-weight: 700;
-        display: block;
-        width: 100%;
-        margin: var(--input-margin);
-        padding: var(--input-padding);
-        font-size: var(--font-size-medium)
-    }
-
-    .post-form button {
-        background: var(--primary-color);
-        color: var(--main-bg-color);
-        padding: var(--input-padding) var(--input-padding * 2);
-        font-size: var(--font-size-medium);
-        cursor: pointer
-    }
-
-    .posts {
-        margin-top: 20px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 10px
-    }
-
-    .post {
-        border: 1px solid #ddd;
-        padding: 20px
-    }
-
-    .post img {
-        height: 300px;
-        width: 100%;
-        object-fit: cover
-    }
-
-    .heading {
-        display: flex;
-        justify-content: center;
-        font-size: var(--font-size-large)
-    }
-
-    .divider {
-        background-color: var(--secondary-color);
-        padding: 10px 0
-    }
-
-    .divider p {
-        margin: 0
-    }
-
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, .5);
-        display: flex;
-        justify-content: center;
-        align-items: center
-    }
-
-    .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 500px
-    }
-
-    body.modal-open {
-        filter: blur(5px);
-        overflow: hidden
-    }
-
-    .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: 700
-    }
-
-    .close:focus,
-    .close:hover {
-        color: #000;
-        cursor: pointer
-    }
-    .modal{
-        display: none;
-    }
-</style>
 
 <body>
 
     <header>
-        <h1>SpaceCapsule</h1>
+        <h1>Z.</h1>
+        <input class="search-box">
+        <button id="search-button">search</button>
     </header>
 
-    <section class="post-form">
-        <h2>Create a New Blog Post</h2>
+    <button id="new-note-button">new</button>
+
+    <section class="note-form">
+        <h2>Create a New Note</h2>
         <input type="text" id="title" placeholder="Title">
-        <input type="text" id="imgUrl" placeholder="Image URL">
         <textarea id="content" placeholder="Content"></textarea>
-        <button id="postButton">Post</button>
+        <button id="noteButton">Create</button>
     </section>
 
     <div class="divider">
-        <p class="heading">All Blogs</p>
+        <p class="heading">All Notes</p>
     </div>
 
-    <section class="posts" id="all-posts"></section>
+    <section class="notes" id="all-notes"></section>
 
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <span class="close">×</span>
-            <h2>Edit Blog</h2>
+            <span class="close">&cross;</span>
+            <h2>Edit Note</h2>
             <input type="text" id="editTitle" placeholder="Title">
-            <input type="text" id="editImgUrl" placeholder="Image URL">
             <textarea id="editContent" placeholder="Content"></textarea>
             <button id="saveButton">Save Changes</button>
         </div>
     </div>
 
     <script>
-        const apiEndpoint = 'http://localhost:5000/api/blogs'; // Centralize API URL
-
-        // Fetch and display blogs
-        async function fetchBlogs() {
+        const apiEndpoint = 'http://localhost:3000/api/notes'; // Centralize API URL
+        // Fetch and display notes
+        async function fetchNotes() {
             try {
                 const response = await fetch(apiEndpoint);
-                const blogs = await response.json();
-                displayBlogs(blogs);
+                const notes = await response.json();
+                displayNotes(notes);
             } catch (error) {
-                console.error('Error fetching blogs:', error);
+                console.error('Error fetching notes:', error);
             }
         }
 
-        // Display blog posts
-        function displayBlogs(blogs) {
-            const blogContainer = document.getElementById('all-posts');
-            blogContainer.innerHTML = ''; // Clear previous posts
+        // Display notes
+        function displayNotes(notes) {
+            const noteContainer = document.getElementById('all-notes');
+            noteContainer.innerHTML = ''; // Clear previous notes
 
-            blogs.forEach(blog => {
-                createPostElement(blog);
+            notes.forEach(note => {
+                createNoteElement(note);
             });
         }
 
-        // Create a single blog post element
-        function createPostElement(blog) {
-            const blogDiv = document.createElement('div');
-            blogDiv.classList.add('post');
-            blogDiv.innerHTML = `
-                <h2>${blog.title}</h2>
-                <img src="${blog.imgUrl}" alt="${blog.title}">
-                <p>${blog.content}</p>
-                <button class="editbutton" onclick="openEditModal('${blog._id}', '${blog.title}', '${blog.content}', '${blog.imgUrl}')">Edit</button>
-                <button class="deletebutton" onclick="deletePost('${blog._id}')">Delete</button>
+        // Create a single note element
+        function createNoteElement(note) {
+            const noteDiv = document.createElement('div');
+            noteDiv.classList.add('note');
+            noteDiv.innerHTML = `
+                <h2>${note.title}</h2>
+                <p>${note.content}</p>
+                <button class="editbutton" onclick="openEditModal('${note._id}', '${note.title}', '${note.content}')">Edit</button>
+                <button class="deletebutton" onclick="deleteNote('${note._id}')">Delete</button>
+                <small class="date">${note.date}</small>
+                
             `;
-            document.getElementById('all-posts').appendChild(blogDiv);
+            document.getElementById('all-notes').appendChild(noteDiv);
         }
 
-        // Add a new blog post
-        async function addPost(e) {
+        // Add a new note
+        async function addNote(e) {
             e.preventDefault();
             const title = document.getElementById('title').value;
-            const imgUrl = document.getElementById('imgUrl').value;
             const content = document.getElementById('content').value;
 
             try {
                 const response = await fetch(apiEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, imgUrl, content })
+                    body: JSON.stringify({ title, content })
                 });
 
                 if (response.ok) {
-                    const newBlog = await response.json();
-                    createPostElement(newBlog);
+                    const newNote = await response.json();
+                    createNoteElement(newNote);
                     resetForm(); // Reset form after successful submission
-                    fetchBlogs(); // Refresh the blog list
+                    fetchNotes(); // Refresh the note list
                 } else {
-                    console.error('Failed to add post');
+                    console.error('Failed to add note');
                 }
             } catch (error) {
-                console.error('Error adding post:', error);
+                console.error('Error adding note:', error);
             }
         }
 
         // Reset form fields
         function resetForm() {
             document.getElementById('title').value = '';
-            document.getElementById('imgUrl').value = '';
             document.getElementById('content').value = '';
         }
 
-        function openEditModal(id, title, content, imgUrl) {
+        function openEditModal(id, title, content) {
             let currentEditId = id;
             document.getElementById('editTitle').value = title;
             document.getElementById('editContent').value = content;
-            document.getElementById('editImgUrl').value = imgUrl;
             document.getElementById('editModal').style.display = 'block';
 
-            document.getElementById('saveButton').onclick = (e) => updatePost(e, currentEditId);
-
-
+            document.getElementById('saveButton').onclick = (e) => updateNote(e, currentEditId);
         }
 
-        async function editPost(id) {
-            try {
-                const response = await fetch(`${apiEndpoint}/${id}`);
-                const blog = await response.json();
-                openEditModal(id, blog.title, blog.content, blog.imgUrl);
-
-                const saveButton = document.getElementById('saveButton');
-                saveButton.onclick = (e) => updatePost(e, id);
-            } catch (error) {
-                console.error('Error editing post:', error);
-            }
-        }
-
-        async function updatePost(e, id) {
+        async function updateNote(e, id) {
             e.preventDefault();
             const title = document.getElementById('editTitle').value;
-            const imgUrl = document.getElementById('editImgUrl').value;
             const content = document.getElementById('editContent').value;
 
             try {
                 const response = await fetch(`${apiEndpoint}/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, imgUrl, content })
+                    body: JSON.stringify({ title, content })
                 });
 
                 if (response.ok) {
-
                     document.getElementById('editModal').style.display = 'none';
-                    fetchBlogs();
+                    fetchNotes();
                 } else {
-                    console.error('Failed to update blog');
+                    console.error('Failed to update note');
                 }
             } catch (error) {
-                console.error('Error updating post:', error);
+                console.error('Error updating note:', error);
             }
         }
 
-        // Delete blog post
-        async function deletePost(id) {
+        // Delete note
+        async function deleteNote(id) {
             try {
                 const response = await fetch(`${apiEndpoint}/${id}`, { method: 'DELETE' });
                 if (response.ok) {
-                    fetchBlogs();
+                    fetchNotes();
                 } else {
-                    console.error('Failed to delete blog');
+                    console.error('Failed to delete note');
                 }
             } catch (error) {
-                console.error('Error deleting post:', error);
+                console.error('Error deleting note:', error);
             }
         }
 
-        // Close the modal
-        const closeModal = document.querySelector('.close');
-        closeModal.addEventListener('click', () => {
-            document.getElementById('editModal').style.display = 'none';
-        });
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
-            const postButton = document.getElementById('postButton');
-            postButton.addEventListener('click', debounce(addPost, 300));
-            fetchBlogs();
+            const noteButton = document.getElementById('noteButton');
+            noteButton.addEventListener('click', debounce(addNote, 300));
+            fetchNotes();
         });
+
+
 
         // Debounce function to prevent rapid button clicks
         function debounce(func, delay) {
@@ -322,6 +175,9 @@
                 timeoutId = setTimeout(() => func.apply(this, args), delay);
             };
         }
+
+        const newNote = document.getElementById('new-note-button');
+
     </script>
 
 </body>

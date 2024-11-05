@@ -1,0 +1,126 @@
+:root {
+    --main-font:'Arial';
+    --main-bg-color: #fff;
+    --primary-color: #000;
+    --secondary-color: bisque;
+    --input-padding: 10px;
+    --input-margin: 10px 0;
+    --font-size-large: 30px;
+    --font-size-medium: 16px
+}
+
+* {
+    font-family: var(--main-font)
+}
+
+body {
+    padding: 20px
+}
+
+header {
+    font-size: var(--font-size-large);
+    font-weight: 700
+}
+
+.note-form {
+    margin-bottom: 20px;
+    width:50%;
+    display:none;
+}
+
+.note-form input,
+.note-form textarea {
+    font-weight: 700;
+    display: block;
+    width: 100%;
+    margin: var(--input-margin);
+    padding: var(--input-padding);
+    font-size: var(--font-size-medium)
+}
+
+.note-form button {
+    background: var(--primary-color);
+    color: var(--main-bg-color);
+    padding: var(--input-padding) var(--input-padding * 2);
+    font-size: var(--font-size-medium);
+    cursor: pointer
+}
+
+.notes {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px
+}
+
+.note {
+    border: 1px solid #ddd;
+    padding: 20px
+}
+
+.note img {
+    height: 300px;
+    width: 100%;
+    object-fit: cover
+}
+
+.heading {
+    display: flex;
+    justify-content: center;
+    font-size: var(--font-size-large)
+}
+
+.divider {
+    background-color: var(--secondary-color);
+    padding: 10px 0
+}
+
+.divider p {
+    margin: 0
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, .5);
+    display: flex;
+    justify-content: center;
+    align-items: center
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px
+}
+
+body.modal-open {
+    filter: blur(5px);
+    overflow: hidden
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: 700
+}
+
+.close:focus,
+.close:hover {
+    color: #000;
+    cursor: pointer
+}
+
+.modal {
+    display: none;
+}
