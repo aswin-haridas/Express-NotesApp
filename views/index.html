@@ -1,29 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zametki.</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-
     <header>
         <h1>Z.</h1>
-        <input class="search-box">
-        <button id="search-button">search</button>
+        <input class="search-box" placeholder="Search notes..." />
+        <button id="search-button">Search</button>
     </header>
 
-    <button id="new-note-button">new</button>
+    <button id="new-note-button">New</button>
 
-    <section class="note-form">
-        <h2>Create a New Note</h2>
-        <input type="text" id="title" placeholder="Title">
-        <textarea id="content" placeholder="Content"></textarea>
-        <button id="noteButton">Create</button>
-    </section>
+    <div class="modal" id="new-note-modal">
+        <div class="note-form">
+            <h2>Create a New Note</h2>
+            <input type="text" id="title" placeholder="Title" />
+            <textarea id="content" placeholder="Content"></textarea>
+            <button id="noteButton">Create</button>
+            <button class="closemodalbutton">Cancel</button>
+        </div>
+    </div>
+    <div class="modal" id="edit-note-modal">
+        <div class="note-form">
+            <h2>Edit Note</h2>
+            <input type="text" id="editTitle" placeholder="Title" />
+            <textarea id="editContent" placeholder="Content"></textarea>
+            <button id="saveButton">Save Changes</button>
+            <button class="closeeditmodalbutton">Cancel</button>
+        </div>
+    </div>
 
     <div class="divider">
         <p class="heading">All Notes</p>
@@ -31,65 +41,50 @@
 
     <section class="notes" id="all-notes"></section>
 
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&cross;</span>
-            <h2>Edit Note</h2>
-            <input type="text" id="editTitle" placeholder="Title">
-            <textarea id="editContent" placeholder="Content"></textarea>
-            <button id="saveButton">Save Changes</button>
-        </div>
-    </div>
-
     <script>
-        const apiEndpoint = 'http://localhost:3000/api/notes'; // Centralize API URL
-        // Fetch and display notes
+        const apiEndpoint = "http://localhost:3000/api/notes"; // Centralize API URL
+
         async function fetchNotes() {
             try {
                 const response = await fetch(apiEndpoint);
                 const notes = await response.json();
                 displayNotes(notes);
             } catch (error) {
-                console.error('Error fetching notes:', error);
+                console.error("Error fetching notes:", error);
             }
         }
 
-        // Display notes
         function displayNotes(notes) {
-            const noteContainer = document.getElementById('all-notes');
-            noteContainer.innerHTML = ''; // Clear previous notes
+            const noteContainer = document.getElementById("all-notes");
+            noteContainer.innerHTML = ""; // Clear previous notes
 
-            notes.forEach(note => {
+            notes.forEach((note) => {
                 createNoteElement(note);
             });
         }
 
-        // Create a single note element
         function createNoteElement(note) {
-            const noteDiv = document.createElement('div');
-            noteDiv.classList.add('note');
+            const noteDiv = document.createElement("div");
+            noteDiv.classList.add("note");
             noteDiv.innerHTML = `
                 <h2>${note.title}</h2>
                 <p>${note.content}</p>
                 <button class="editbutton" onclick="openEditModal('${note._id}', '${note.title}', '${note.content}')">Edit</button>
                 <button class="deletebutton" onclick="deleteNote('${note._id}')">Delete</button>
-                <small class="date">${note.date}</small>
-                
+                <small class="date">${new Date(note.date).toLocaleString()}</small>
             `;
-            document.getElementById('all-notes').appendChild(noteDiv);
+            document.getElementById("all-notes").appendChild(noteDiv);
         }
 
-        // Add a new note
-        async function addNote(e) {
-            e.preventDefault();
-            const title = document.getElementById('title').value;
-            const content = document.getElementById('content').value;
+        async function addNote() {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
 
             try {
                 const response = await fetch(apiEndpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, content })
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title, content }),
                 });
 
                 if (response.ok) {
@@ -97,77 +92,96 @@
                     createNoteElement(newNote);
                     resetForm(); // Reset form after successful submission
                     fetchNotes(); // Refresh the note list
+                    closeModal("new-note-modal"); // Close the modal
                 } else {
-                    console.error('Failed to add note');
+                    console.error("Failed to add note");
                 }
             } catch (error) {
-                console.error('Error adding note:', error);
+                console.error("Error adding note:", error);
             }
         }
 
-        // Reset form fields
         function resetForm() {
-            document.getElementById('title').value = '';
-            document.getElementById('content').value = '';
+            document.getElementById("title").value = "";
+            document.getElementById("content").value = "";
         }
 
         function openEditModal(id, title, content) {
-            let currentEditId = id;
-            document.getElementById('editTitle').value = title;
-            document.getElementById('editContent').value = content;
-            document.getElementById('editModal').style.display = 'block';
+            document.getElementById("editTitle").value = title;
+            document.getElementById("editContent").value = content;
+            openModal("edit-note-modal");
 
-            document.getElementById('saveButton').onclick = (e) => updateNote(e, currentEditId);
+            document.getElementById("saveButton").onclick = (e) =>
+                updateNote(e, id);
         }
 
         async function updateNote(e, id) {
             e.preventDefault();
-            const title = document.getElementById('editTitle').value;
-            const content = document.getElementById('editContent').value;
+            const title = document.getElementById("editTitle").value;
+            const content = document.getElementById("editContent").value;
 
             try {
                 const response = await fetch(`${apiEndpoint}/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, content })
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title, content }),
                 });
 
                 if (response.ok) {
-                    document.getElementById('editModal').style.display = 'none';
+                    closeModal("edit-note-modal");
                     fetchNotes();
                 } else {
-                    console.error('Failed to update note');
+                    console.error("Failed to update note");
                 }
             } catch (error) {
-                console.error('Error updating note:', error);
+                console.error("Error updating note:", error);
             }
         }
 
-        // Delete note
         async function deleteNote(id) {
             try {
-                const response = await fetch(`${apiEndpoint}/${id}`, { method: 'DELETE' });
+                const response = await fetch(`${apiEndpoint}/${id}`, {
+                    method: "DELETE",
+                });
                 if (response.ok) {
                     fetchNotes();
                 } else {
-                    console.error('Failed to delete note');
+                    console.error("Failed to delete note");
                 }
             } catch (error) {
-                console.error('Error deleting note:', error);
+                console.error("Error deleting note:", error);
             }
         }
 
+        document.getElementById("new-note-button").addEventListener(
+            "click",
+            debounce(() => openModal("new-note-modal"), 300)
+        );
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', () => {
-            const noteButton = document.getElementById('noteButton');
-            noteButton.addEventListener('click', debounce(addNote, 300));
+        document.querySelectorAll(".closemodalbutton").forEach((button) =>
+            button.addEventListener("click", () => closeModal("new-note-modal"))
+        );
+
+        document.querySelectorAll(".closeeditmodalbutton").forEach((button) =>
+            button.addEventListener("click", () => closeModal("edit-note-modal"))
+        );
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = "block";
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = "none";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const noteButton = document.getElementById("noteButton");
+            noteButton.addEventListener("click", debounce(addNote, 300));
             fetchNotes();
         });
 
-
-
-        // Debounce function to prevent rapid button clicks
         function debounce(func, delay) {
             let timeoutId;
             return function (...args) {
@@ -175,11 +189,6 @@
                 timeoutId = setTimeout(() => func.apply(this, args), delay);
             };
         }
-
-        const newNote = document.getElementById('new-note-button');
-
     </script>
-
 </body>
-
 </html>
