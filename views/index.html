@@ -6,40 +6,42 @@
     <title>Zametki.</title>
     <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
     <header>
         <h1>Z.</h1>
-        <input class="search-box" placeholder="Search notes..." />
-        <button id="search-button">Search</button>
+        <div class="search">
+            <input class="search-box" placeholder="Search notes..." />
+            <button class="button" id="search-button">Search</button>
+        </div>
     </header>
+    <section class="heading">
+        <p>All Notes</p>
+        <button id="new-note-button" class="button">Create new note</button>
+    </section>
 
-    <button id="new-note-button">New</button>
+    <section class="notes" id="all-notes"></section>
 
     <div class="modal" id="new-note-modal">
         <div class="note-form">
-            <h2>Create a New Note</h2>
             <input type="text" id="title" placeholder="Title" />
             <textarea id="content" placeholder="Content"></textarea>
             <button id="noteButton">Create</button>
             <button class="closemodalbutton">Cancel</button>
         </div>
     </div>
+
     <div class="modal" id="edit-note-modal">
         <div class="note-form">
-            <h2>Edit Note</h2>
-            <input type="text" id="editTitle" placeholder="Title" />
-            <textarea id="editContent" placeholder="Content"></textarea>
-            <button id="saveButton">Save Changes</button>
-            <button class="closeeditmodalbutton">Cancel</button>
+            <input type="text" id="editTitle" placeholder="Title" class="input-title"/>
+            <textarea id="editContent" placeholder="Content" class="textarea-content"></textarea>
+            <div class="modal-buttons">
+                <button id="saveButton" class="button-save">Save Changes</button>
+                <button class="button-cancel closeeditmodalbutton">Cancel</button>
+            </div>
+            <img src="trash.png" id="delete-button" alt="Delete Note" class="delete-icon">
         </div>
     </div>
-
-    <div class="divider">
-        <p class="heading">All Notes</p>
-    </div>
-
-    <section class="notes" id="all-notes"></section>
+    
 
     <script>
         const apiEndpoint = "http://localhost:3000/api/notes"; // Centralize API URL
@@ -67,11 +69,11 @@
             const noteDiv = document.createElement("div");
             noteDiv.classList.add("note");
             noteDiv.innerHTML = `
+            <div style="cursor:pointer;" onclick="openEditModal('${note._id}', '${note.title}', '${note.content}')">
                 <h2>${note.title}</h2>
                 <p>${note.content}</p>
-                <button class="editbutton" onclick="openEditModal('${note._id}', '${note.title}', '${note.content}')">Edit</button>
-                <button class="deletebutton" onclick="deleteNote('${note._id}')">Delete</button>
                 <small class="date">${new Date(note.date).toLocaleString()}</small>
+            </div>
             `;
             document.getElementById("all-notes").appendChild(noteDiv);
         }
@@ -113,6 +115,8 @@
 
             document.getElementById("saveButton").onclick = (e) =>
                 updateNote(e, id);
+            document.getElementById("delete-button").onclick = () =>
+                deleteNote(id);
         }
 
         async function updateNote(e, id) {
@@ -144,6 +148,7 @@
                     method: "DELETE",
                 });
                 if (response.ok) {
+                    closeModal("edit-note-modal");
                     fetchNotes();
                 } else {
                     console.error("Failed to delete note");
