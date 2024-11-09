@@ -1,11 +1,20 @@
+:root {
+  --text-color: #333;
+  --background-color: #f3f3f3;
+  --button-bg-color: #000;
+  --note-bg-color: #ffd8b5;
+  --modal-bg-color: #fefefe;
+  --border-color: #888;
+}
+
 body {
   margin: 0;
   padding: 0;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.5;
-  color: #333;
-  background-color: #fff;
+  color: var(--text-color);
+  background-color: var(--background-color);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -16,21 +25,20 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 2rem;
-  height: 10px;
   border-bottom: 1px solid black;
 }
 
 .search {
   display: flex;
-  flex-direction: row;
 }
+
 .search-box {
   display: flex;
   align-items: center;
-  margin-right: 8px;
-  border: black solid 2px;
-  width: 200px;
-  height: 34px;
+  margin-right: 0.5rem;
+  border: black solid 0.125rem;
+  width: 12.5rem;
+  height: 2.125rem;
 }
 
 button {
@@ -39,12 +47,17 @@ button {
   justify-content: center;
   height: 40px;
   width: 80px;
-  padding: 12px;
-  background-color: #000000;
+  background-color: var(--button-bg-color);
   color: #fff;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
 }
+
+button:hover {
+  background-color: #555; /* Example hover color */
+}
+
 #new-note-button {
   width: auto;
 }
@@ -54,31 +67,32 @@ button {
   justify-content: space-between;
   align-items: center;
   height: 60px;
-  padding: 0px 16px;
+  padding: 0 1rem;
 }
 
 .heading p {
   font-size: larger;
   font-weight: bold;
-  margin-right: 8px;
+  margin-right: 0.5rem;
 }
 
 .notes {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  padding: 16px;
+  gap: 1rem;
+  padding: 1rem;
 }
 
 .note {
   display: flex;
   flex-direction: column;
-  border: 2px solid black;
-  padding: 16px;
+  padding: 1rem;
   width: 200px;
   min-height: 200px;
-  background-color: #fabdff;
+  background-color: var(--note-bg-color);
+  border-radius: 8px;
+  overflow-wrap: break-word; /* Ensures text wraps properly */
 }
 
 img {
@@ -87,16 +101,17 @@ img {
 }
 
 .modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+  display: none; /* Initially hidden */
+  position: fixed;
+  z-index: 1;
   left: 0;
   top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0, 0, 0); /* Fallback color */
-  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent background */
+  justify-content: center;
+  align-items: center;
 }
 
 .note-form {
@@ -104,35 +119,59 @@ img {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
-  border: 1px solid #888;
-  width: 50%; /* Could be more or less, depending on screen size */
+  background-color: var(--modal-bg-color);
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px; /* Rounded corners */
+  width: 90%;
+  max-width: 500px; /* Maximum width for larger screens */
+  margin: 50% auto; /* Center the modal */
 }
 
-
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+:root {
+  --margin-bottom: 1rem;
+  --padding: 0.5rem;
+  --font-size: 1rem;
 }
 
-.note-form {
+.note-form input,
+.note-form textarea {
+  width: 100%;
+  margin-bottom: var(--margin-bottom);
+  padding: var(--padding);
+  border-radius: 5px;
+  font-size: var(--font-size);
+  border: none;
+  box-sizing: border-box;
+}
+
+.note-form input:focus,
+.note-form textarea:focus {
+  outline: none;
+}
+
+.note-form input {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.note-form textarea {
+  height: 150px; /* Increase the height of the textarea */
+}
+
+.note-form button {
+  background-color: var(--button-bg-color);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-buttons {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  width: 100%;
   align-items: center;
-  background-color: #fff;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
-  border: 2px solid #333;
-  width: 80%; /* Adjust based on your preference */
-  max-width: 500px; /* Max width for larger screens */
+  gap: 8px;
 }

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zametki.</title>
     <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
     <header>
         <h1>Z.</h1>
@@ -25,23 +27,26 @@
         <div class="note-form">
             <input type="text" id="title" placeholder="Title" />
             <textarea id="content" placeholder="Content"></textarea>
-            <button id="noteButton">Create</button>
-            <button class="closemodalbutton">Cancel</button>
+            <div class="modal-buttons">
+                <button id="noteButton">Create</button>
+                <button class="closemodalbutton">Cancel</button>
+            </div>
         </div>
     </div>
 
     <div class="modal" id="edit-note-modal">
         <div class="note-form">
-            <input type="text" id="editTitle" placeholder="Title" class="input-title"/>
+            <input type="text" id="editTitle" placeholder="Title" class="input-title" />
             <textarea id="editContent" placeholder="Content" class="textarea-content"></textarea>
             <div class="modal-buttons">
                 <button id="saveButton" class="button-save">Save Changes</button>
                 <button class="button-cancel closeeditmodalbutton">Cancel</button>
+                <img src="trash.png" id="delete-button" alt="Delete Note" class="delete-icon">
+
             </div>
-            <img src="trash.png" id="delete-button" alt="Delete Note" class="delete-icon">
         </div>
     </div>
-    
+
 
     <script>
         const apiEndpoint = "http://localhost:3000/api/notes"; // Centralize API URL
@@ -196,4 +201,5 @@
         }
     </script>
 </body>
+
 </html>
