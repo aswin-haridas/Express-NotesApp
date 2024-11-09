@@ -1,205 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zametki.</title>
     <link rel="stylesheet" href="style.css" />
-</head>
+  </head>
 
-<body>
+  <body>
     <header>
-        <h1>Z.</h1>
-        <div class="search">
-            <input class="search-box" placeholder="Search notes..." />
-            <button class="button" id="search-button">Search</button>
-        </div>
+      <h1>Z.</h1>
+      <div class="search">
+        <input class="search-box" placeholder="Search notes..." />
+        <button class="button" id="search-button">Search</button>
+      </div>
     </header>
     <section class="heading">
-        <p>All Notes</p>
-        <button id="new-note-button" class="button">Create new note</button>
+      <p>All Notes</p>
+      <button  class="button" id="new-note-button">Create new note</button>
     </section>
 
-    <section class="notes" id="all-notes"></section>
+    <section class="notes-container" id="all-notes"></section>
 
     <div class="modal" id="new-note-modal">
-        <div class="note-form">
-            <input type="text" id="title" placeholder="Title" />
-            <textarea id="content" placeholder="Content"></textarea>
-            <div class="modal-buttons">
-                <button id="noteButton">Create</button>
-                <button class="closemodalbutton">Cancel</button>
-            </div>
+      <div class="note-form">
+        <input type="text" id="title" placeholder="Title" />
+        <textarea id="content" placeholder="Content"></textarea>
+        <div class="modal-buttons">
+          <button id="noteButton">
+            <img src="save.png" alt="Save" class="button-icon" />
+          </button>
+          <button class="closemodalbutton">
+            <img src="close-button.png" alt="Cancel" class="button-icon" />
+          </button>
         </div>
+      </div>
     </div>
 
     <div class="modal" id="edit-note-modal">
-        <div class="note-form">
-            <input type="text" id="editTitle" placeholder="Title" class="input-title" />
-            <textarea id="editContent" placeholder="Content" class="textarea-content"></textarea>
-            <div class="modal-buttons">
-                <button id="saveButton" class="button-save">Save Changes</button>
-                <button class="button-cancel closeeditmodalbutton">Cancel</button>
-                <img src="trash.png" id="delete-button" alt="Delete Note" class="delete-icon">
-
-            </div>
+      <div class="note-form">
+        <input
+          type="text"
+          id="editTitle"
+          placeholder="Title"
+          class="input-title"
+        />
+        <textarea
+          id="editContent"
+          placeholder="Content"
+          class="textarea-content"
+        ></textarea>
+        <div class="modal-buttons">
+          <button id="saveButton">
+            <img src="save.png" alt="Save Changes" class="button-icon" />
+          </button>
+          <button class="closeeditmodalbutton">
+            <img src="close-button.png" alt="Cancel" class="button-icon" />
+          </button>
+          <button id="delete-button">
+            <img src="delete.png" alt="Delete Note" class="button-icon" />
+          </button>
         </div>
+      </div>
     </div>
 
-
     <script>
-        const apiEndpoint = "http://localhost:3000/api/notes"; // Centralize API URL
+      const apiEndpoint = "http://localhost:3000/api/notes"; // Centralize API URL
 
-        async function fetchNotes() {
-            try {
-                const response = await fetch(apiEndpoint);
-                const notes = await response.json();
-                displayNotes(notes);
-            } catch (error) {
-                console.error("Error fetching notes:", error);
-            }
+      async function fetchNotes() {
+        try {
+          const response = await fetch(apiEndpoint);
+          const notes = await response.json();
+          displayNotes(notes);
+        } catch (error) {
+          console.error("Error fetching notes:", error);
         }
+      }
 
-        function displayNotes(notes) {
-            const noteContainer = document.getElementById("all-notes");
-            noteContainer.innerHTML = ""; // Clear previous notes
+      function displayNotes(notes) {
+        const noteContainer = document.getElementById("all-notes");
+        noteContainer.innerHTML = ""; // Clear previous notes
 
-            notes.forEach((note) => {
-                createNoteElement(note);
-            });
-        }
+        notes.forEach((note) => {
+          createNoteElement(note);
+        });
+      }
 
-        function createNoteElement(note) {
-            const noteDiv = document.createElement("div");
-            noteDiv.classList.add("note");
-            noteDiv.innerHTML = `
-            <div style="cursor:pointer;" onclick="openEditModal('${note._id}', '${note.title}', '${note.content}')">
+      function createNoteElement(note) {
+        const noteDiv = document.createElement("div");
+        noteDiv.classList.add("note");
+        noteDiv.innerHTML = `
+            <div style="cursor:pointer;" onclick="openEditModal('${
+              note._id
+            }', '${note.title}', '${note.content}')">
                 <h2>${note.title}</h2>
                 <p>${note.content}</p>
-                <small class="date">${new Date(note.date).toLocaleString()}</small>
+                <small class="date">${new Date(
+                  note.date
+                ).toLocaleString()}</small>
             </div>
             `;
-            document.getElementById("all-notes").appendChild(noteDiv);
+        document.getElementById("all-notes").appendChild(noteDiv);
+      }
+
+      async function addNote() {
+        const title = document.getElementById("title").value;
+        const content = document.getElementById("content").value;
+
+        try {
+          const response = await fetch(apiEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, content }),
+          });
+
+          if (response.ok) {
+            const newNote = await response.json();
+            createNoteElement(newNote);
+            resetForm(); // Reset form after successful submission
+            fetchNotes(); // Refresh the note list
+            closeModal("new-note-modal"); // Close the modal
+          } else {
+            console.error("Failed to add note");
+          }
+        } catch (error) {
+          console.error("Error adding note:", error);
         }
+      }
 
-        async function addNote() {
-            const title = document.getElementById("title").value;
-            const content = document.getElementById("content").value;
+      function resetForm() {
+        document.getElementById("title").value = "";
+        document.getElementById("content").value = "";
+      }
 
-            try {
-                const response = await fetch(apiEndpoint, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ title, content }),
-                });
+      function openEditModal(id, title, content) {
+        document.getElementById("editTitle").value = title;
+        document.getElementById("editContent").value = content;
+        openModal("edit-note-modal");
 
-                if (response.ok) {
-                    const newNote = await response.json();
-                    createNoteElement(newNote);
-                    resetForm(); // Reset form after successful submission
-                    fetchNotes(); // Refresh the note list
-                    closeModal("new-note-modal"); // Close the modal
-                } else {
-                    console.error("Failed to add note");
-                }
-            } catch (error) {
-                console.error("Error adding note:", error);
-            }
-        }
+        document.getElementById("saveButton").onclick = (e) =>
+          updateNote(e, id);
+        document.getElementById("delete-button").onclick = () => deleteNote(id);
+      }
 
-        function resetForm() {
-            document.getElementById("title").value = "";
-            document.getElementById("content").value = "";
-        }
+      async function updateNote(e, id) {
+        e.preventDefault();
+        const title = document.getElementById("editTitle").value;
+        const content = document.getElementById("editContent").value;
 
-        function openEditModal(id, title, content) {
-            document.getElementById("editTitle").value = title;
-            document.getElementById("editContent").value = content;
-            openModal("edit-note-modal");
+        try {
+          const response = await fetch(`${apiEndpoint}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, content }),
+          });
 
-            document.getElementById("saveButton").onclick = (e) =>
-                updateNote(e, id);
-            document.getElementById("delete-button").onclick = () =>
-                deleteNote(id);
-        }
-
-        async function updateNote(e, id) {
-            e.preventDefault();
-            const title = document.getElementById("editTitle").value;
-            const content = document.getElementById("editContent").value;
-
-            try {
-                const response = await fetch(`${apiEndpoint}/${id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ title, content }),
-                });
-
-                if (response.ok) {
-                    closeModal("edit-note-modal");
-                    fetchNotes();
-                } else {
-                    console.error("Failed to update note");
-                }
-            } catch (error) {
-                console.error("Error updating note:", error);
-            }
-        }
-
-        async function deleteNote(id) {
-            try {
-                const response = await fetch(`${apiEndpoint}/${id}`, {
-                    method: "DELETE",
-                });
-                if (response.ok) {
-                    closeModal("edit-note-modal");
-                    fetchNotes();
-                } else {
-                    console.error("Failed to delete note");
-                }
-            } catch (error) {
-                console.error("Error deleting note:", error);
-            }
-        }
-
-        document.getElementById("new-note-button").addEventListener(
-            "click",
-            debounce(() => openModal("new-note-modal"), 300)
-        );
-
-        document.querySelectorAll(".closemodalbutton").forEach((button) =>
-            button.addEventListener("click", () => closeModal("new-note-modal"))
-        );
-
-        document.querySelectorAll(".closeeditmodalbutton").forEach((button) =>
-            button.addEventListener("click", () => closeModal("edit-note-modal"))
-        );
-
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.style.display = "block";
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.style.display = "none";
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const noteButton = document.getElementById("noteButton");
-            noteButton.addEventListener("click", debounce(addNote, 300));
+          if (response.ok) {
+            closeModal("edit-note-modal");
             fetchNotes();
-        });
-
-        function debounce(func, delay) {
-            let timeoutId;
-            return function (...args) {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => func.apply(this, args), delay);
-            };
+          } else {
+            console.error("Failed to update note");
+          }
+        } catch (error) {
+          console.error("Error updating note:", error);
         }
-    </script>
-</body>
+      }
 
+      async function deleteNote(id) {
+        try {
+          const response = await fetch(`${apiEndpoint}/${id}`, {
+            method: "DELETE",
+          });
+          if (response.ok) {
+            closeModal("edit-note-modal");
+            fetchNotes();
+          } else {
+            console.error("Failed to delete note");
+          }
+        } catch (error) {
+          console.error("Error deleting note:", error);
+        }
+      }
+
+      document.getElementById("new-note-button").addEventListener(
+        "click",
+        debounce(() => openModal("new-note-modal"), 300)
+      );
+
+      document
+        .querySelectorAll(".closemodalbutton")
+        .forEach((button) =>
+          button.addEventListener("click", () => closeModal("new-note-modal"))
+        );
+
+      document
+        .querySelectorAll(".closeeditmodalbutton")
+        .forEach((button) =>
+          button.addEventListener("click", () => closeModal("edit-note-modal"))
+        );
+
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = "block";
+      }
+
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = "none";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const noteButton = document.getElementById("noteButton");
+        noteButton.addEventListener("click", debounce(addNote, 300));
+        fetchNotes();
+      });
+
+      function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => func.apply(this, args), delay);
+        };
+      }
+    </script>
+  </body>
 </html>
